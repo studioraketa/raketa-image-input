@@ -1,7 +1,7 @@
 ## Install
 
 ```
-yarn add "@raketa-cms/raketa-cms"
+yarn add "@raketa-cms/raketa-image-picker"
 ```
 
 ## Development
@@ -14,11 +14,11 @@ In another terminal session in the project's directory run:
 - yarn link
 
 In a terminal for a project using this npm package run the following command:
-- yarn link "@raketa-cms/raketa-cms"
+- yarn link "@raketa-cms/raketa-image-picker"
 - yarn install
 
 Note when you want to stop using the local package:
-- yarn unlink "@raketa-cms/raketa-cms"
+- yarn unlink "@raketa-cms/raketa-image-picker"
 - yarn install
 
 ## Build and publish
