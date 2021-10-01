@@ -55,7 +55,7 @@ class ImagePicker extends React.Component {
   }
 
   fetchData(q, callback) {
-    const params = q !== '' && q.length > 2 ? { q } : {}
+    const params = (q !== '' && q.length > 2) ? { f: { name: q } } : {}
 
     this.mediaManager.findAll((images) => {
       this.setState({ images }, () => callback())
