@@ -1,7 +1,7 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import { reset, buttonReset } from '@raketa-cms/raketa-mir'
+import { reset, buttonReset, Button, Stack } from '@raketa-cms/raketa-mir'
 
 import Img from '../../lib/Image'
 import TextInput from '../../forms/TextInput'
@@ -131,6 +131,8 @@ const BrowseTab = ({
   onSelect,
   onDelete,
   onSearch,
+  onSearchTermChange,
+  onSearchClear,
   onEdit
 }) => {
   const [selectedImage, setSelectedImage] = React.useState(initialImage)
@@ -142,11 +144,25 @@ const BrowseTab = ({
 
   return (
     <React.Fragment>
-      <TextInput
-        label='Search images'
-        value={q}
-        onChange={(term) => onSearch(term)}
-      />
+      <Stack v='center' h='flex-start' g='1em'>
+        <TextInput
+          label='Search images'
+          value={q}
+          onChange={(term) => onSearchTermChange(term)}
+        />
+
+        <Button type='submit' variant='primary' onClick={() => onSearch()}>
+          Search
+        </Button>
+
+        <Button
+          type='button'
+          variant='secondary'
+          onClick={() => onSearchClear()}
+        >
+          Clear
+        </Button>
+      </Stack>
 
       <ImageList>
         {images.map((image) => (

@@ -12,7 +12,13 @@ import IMAGES from './IMAGES'
 
 class FakeMediaManager {
   findAll(callback, params = {}) {
-    return callback(IMAGES)
+    if (params.f && params.f.name) {
+      const term = params.f.name.toLowerCase()
+
+      return callback(IMAGES.filter((i) => i.name.toLowerCase().includes(term)))
+    } else {
+      return callback(IMAGES)
+    }
   }
 }
 
@@ -21,7 +27,7 @@ const mediaManager = new FakeMediaManager('/')
 const App = () => {
   return (
     <MediaManagerContext.Provider value={mediaManager}>
-      <img src={imagePlaceholder('32x32')} />
+      <img src={imagePlaceholder('32x32')} alt='32x32' />
 
       <ThemeProvider theme={theme}>
         <ImagePicker />

@@ -55,7 +55,7 @@ class ImagePicker extends React.Component {
   }
 
   fetchData(q, callback) {
-    const params = (q !== '' && q.length > 2) ? { f: { name: q } } : {}
+    const params = q !== '' ? { f: { name: q } } : {}
 
     this.mediaManager.findAll((images) => {
       this.setState({ images }, () => callback())
@@ -126,7 +126,15 @@ class ImagePicker extends React.Component {
   }
 
   handleSearch(q) {
-    this.setState({ q }, () => this.fetchData(q, () => {}))
+    this.fetchData(q, () => {})
+  }
+
+  handleSearchTermUpdate(q) {
+    this.setState({ q })
+  }
+
+  handleSearchClear() {
+    this.setState({ q: '' }, () => this.fetchData('', () => {}))
   }
 
   handleEditImage(image) {
@@ -230,7 +238,11 @@ class ImagePicker extends React.Component {
                   images={images}
                   selectedImage={selectedImage}
                   q={q}
-                  onSearch={(q) => this.handleSearch(q)}
+                  onSearch={() => this.handleSearch(q)}
+                  onSearchTermChange={(term) =>
+                    this.handleSearchTermUpdate(term)
+                  }
+                  onSearchClear={() => this.handleSearchClear()}
                   onSelect={(image) => this.setState({ selectedImage: image })}
                   onFastSelect={(image) => this.handleFastSelect(image)}
                   onDelete={(image) => this.handleDeleteImage(image)}
