@@ -1,7 +1,7 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import { reset, buttonReset } from '@raketa-cms/raketa-mir'
+import { reset, buttonReset, Button, Stack } from '@raketa-cms/raketa-mir'
 
 import Img from '../../lib/Image'
 import TextInput from '../../forms/TextInput'
@@ -96,7 +96,7 @@ const ImageItem = ({
     onDoubleClick={() => onFastSelect(image)}
   >
     <ImageWrapper title={image.name}>
-      <Img src={image} variant='thumb' />
+      <Img src={image} variant='thumb' title={image && image.name} />
     </ImageWrapper>
 
     <EditButton
@@ -123,50 +123,62 @@ const ImageItem = ({
   </Thumb>
 )
 
-class BrowseTab extends React.Component {
-  constructor(props) {
-    super(props)
+const BrowseTab = ({
+  images,
+  q,
+  selectedImage: initialImage,
+  onFastSelect,
+  onSelect,
+  onDelete,
+  onSearch,
+  onSearchTermChange,
+  onSearchClear,
+  onEdit
+}) => {
+  const [selectedImage, setSelectedImage] = React.useState(initialImage)
 
-    this.state = {
-      selectedImage: this.props.selectedImage || ''
-    }
+  const handleSelectImage = (newSelected) => {
+    setSelectedImage(newSelected)
+    onSelect(newSelected)
   }
 
-  handleSelectImage(selectedImage) {
-    this.setState({ selectedImage })
-    this.props.onSelect(selectedImage)
-  }
-
-  render() {
-    const { images, q, onFastSelect, onDelete, onSearch, onEdit } = this.props
-    const { selectedImage } = this.state
-
-    return (
-      <React.Fragment>
+  return (
+    <React.Fragment>
+      <Stack v='center' h='flex-start' g='1em'>
         <TextInput
           label='Search images'
           value={q}
-          onChange={(term) => onSearch(term)}
+          onChange={(term) => onSearchTermChange(term)}
         />
 
-        <ImageList>
-          {images.map((image) => (
-            <ImageItem
-              key={image.id}
-              image={image}
-              selected={selectedImage.id === image.id}
-              onSelect={(onSelectedImage) =>
-                this.handleSelectImage(onSelectedImage)
-              }
-              onFastSelect={onFastSelect}
-              onDelete={onDelete}
-              onEdit={onEdit}
-            />
-          ))}
-        </ImageList>
-      </React.Fragment>
-    )
-  }
+        <Button type='submit' variant='primary' onClick={() => onSearch()}>
+          Search
+        </Button>
+
+        <Button
+          type='button'
+          variant='secondary'
+          onClick={() => onSearchClear()}
+        >
+          Clear
+        </Button>
+      </Stack>
+
+      <ImageList>
+        {images.map((image) => (
+          <ImageItem
+            key={image.id}
+            image={image}
+            selected={selectedImage.id === image.id}
+            onSelect={(onSelectedImage) => handleSelectImage(onSelectedImage)}
+            onFastSelect={onFastSelect}
+            onDelete={onDelete}
+            onEdit={onEdit}
+          />
+        ))}
+      </ImageList>
+    </React.Fragment>
+  )
 }
 
 export default BrowseTab

@@ -1243,10 +1243,10 @@
   version "0.0.0"
   uid ""
 
-"@raketa-cms/raketa-mir@^1.1.1":
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/@raketa-cms/raketa-mir/-/raketa-mir-1.1.1.tgz#536fe43f590207d78a22b930c674f58937280444"
-  integrity sha512-FGlCz7Eu3EHpSiSEaTBPaLjXTERh+U50vkRObCGzrV3siuIRc6K0hcdnS+UlEauge3LZ/ri35M0wxPRAXC8bHg==
+"@raketa-cms/raketa-mir@^1.1.2":
+  version "1.1.4"
+  resolved "https://registry.yarnpkg.com/@raketa-cms/raketa-mir/-/raketa-mir-1.1.4.tgz#b693742360b3eca64c750244ed23df220144223c"
+  integrity sha512-hTB/v8H8oHSRUz2ZhhDZm7iym7s/XPE9ZDCdCfKiEtU29B2mcIXr1A69DsUy50zJJg34JWAQ2I4weIs1gf5Bgw==
 
 "@svgr/babel-plugin-add-jsx-attribute@^4.2.0":
   version "4.2.0"
