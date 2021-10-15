@@ -96,7 +96,7 @@ const ImageItem = ({
     onDoubleClick={() => onFastSelect(image)}
   >
     <ImageWrapper title={image.name}>
-      <Img src={image} variant='thumb' />
+      <Img src={image} variant='thumb' title={image && image.name} />
     </ImageWrapper>
 
     <EditButton
@@ -123,50 +123,46 @@ const ImageItem = ({
   </Thumb>
 )
 
-class BrowseTab extends React.Component {
-  constructor(props) {
-    super(props)
+const BrowseTab = ({
+  images,
+  q,
+  selectedImage: initialImage,
+  onFastSelect,
+  onSelect,
+  onDelete,
+  onSearch,
+  onEdit
+}) => {
+  const [selectedImage, setSelectedImage] = React.useState(initialImage)
 
-    this.state = {
-      selectedImage: this.props.selectedImage || ''
-    }
+  const handleSelectImage = (newSelected) => {
+    setSelectedImage(newSelected)
+    onSelect(newSelected)
   }
 
-  handleSelectImage(selectedImage) {
-    this.setState({ selectedImage })
-    this.props.onSelect(selectedImage)
-  }
+  return (
+    <React.Fragment>
+      <TextInput
+        label='Search images'
+        value={q}
+        onChange={(term) => onSearch(term)}
+      />
 
-  render() {
-    const { images, q, onFastSelect, onDelete, onSearch, onEdit } = this.props
-    const { selectedImage } = this.state
-
-    return (
-      <React.Fragment>
-        <TextInput
-          label='Search images'
-          value={q}
-          onChange={(term) => onSearch(term)}
-        />
-
-        <ImageList>
-          {images.map((image) => (
-            <ImageItem
-              key={image.id}
-              image={image}
-              selected={selectedImage.id === image.id}
-              onSelect={(onSelectedImage) =>
-                this.handleSelectImage(onSelectedImage)
-              }
-              onFastSelect={onFastSelect}
-              onDelete={onDelete}
-              onEdit={onEdit}
-            />
-          ))}
-        </ImageList>
-      </React.Fragment>
-    )
-  }
+      <ImageList>
+        {images.map((image) => (
+          <ImageItem
+            key={image.id}
+            image={image}
+            selected={selectedImage.id === image.id}
+            onSelect={(onSelectedImage) => handleSelectImage(onSelectedImage)}
+            onFastSelect={onFastSelect}
+            onDelete={onDelete}
+            onEdit={onEdit}
+          />
+        ))}
+      </ImageList>
+    </React.Fragment>
+  )
 }
 
 export default BrowseTab
