@@ -51,7 +51,7 @@ export default class MediaManager {
   }
 
   findAll(callback, params = {}) {
-    get(`${this.baseUrl}images`, {...params, page_size: 100})
+    get(`${this.baseUrl}images`, { ...params, page_size: 100 })
       .then((r) => r.json())
       .then((images) => callback(images))
   }
