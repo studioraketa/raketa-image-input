@@ -151,7 +151,7 @@ const BrowseTab = ({
           onChange={(term) => onSearchTermChange(term)}
         />
 
-        <Button type='buton' variant='primary' onClick={() => onSearch()}>
+        <Button type='button' variant='primary' onClick={() => onSearch()}>
           Search
         </Button>
 
