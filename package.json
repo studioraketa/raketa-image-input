@@ -1,6 +1,6 @@
 {
   "name": "@raketa-cms/raketa-image-picker",
-  "version": "1.3.6",
+  "version": "1.3.7",
   "description": "Image browser and upload client for APIs compatible with the Raketa Image JSON format.",
   "author": "studioraketa",
   "license": "MIT",
