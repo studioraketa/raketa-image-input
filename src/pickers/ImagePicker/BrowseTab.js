@@ -170,7 +170,7 @@ const BrowseTab = ({
             key={image.id}
             image={image}
             selected={selectedImage.id === image.id}
-            onSelect={(onSelectedImage) => handleSelectImage(onSelectedImage)}
+            onSelect={handleSelectImage}
             onFastSelect={onFastSelect}
             onDelete={onDelete}
             onEdit={onEdit}

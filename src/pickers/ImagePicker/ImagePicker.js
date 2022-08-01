@@ -1,6 +1,4 @@
-/* eslint-disable no-undef */
 import React from 'react'
-import PropTypes from 'prop-types'
 import styled from 'styled-components'
 
 import Img from '../../lib/Image'
@@ -29,245 +27,192 @@ const ImageControl = styled.div`
   margin-bottom: 16px;
 `
 
-const withMediaManager = (Component) => (props) => {
-  return (
-    <MediaManagerContext.Consumer>
-      {(mediaManager) => <Component mediaManager={mediaManager} {...props} />}
-    </MediaManagerContext.Consumer>
-  )
-}
+const ImagePicker = ({ mediaManager: mediaManagerProps, label = 'Image', value, onChange }) => {
+  const mediaManager = React.useContext(MediaManagerContext) || mediaManagerProps;
 
-class ImagePicker extends React.Component {
-  constructor(props, context) {
-    super(props, context)
+  const [open, setOpen] = React.useState(false);
+  const [state, setState] = React.useState({
+    selectedImage: value || false,
+    filesToUpload: 0,
+    filesUploaded: 0,
+    images: [],
+    files: [],
+    q: ''
+  });
 
-    this.state = {
-      pickerOpen: false,
-      selectedImage: props.value || false,
-      filesToUpload: 0,
-      filesUploaded: 0,
-      images: [],
-      files: [],
-      q: ''
-    }
-
-    this.mediaManager = props.mediaManager || context.mediaManager
-  }
-
-  fetchData(q, callback) {
+  const fetchData = (q, callback) => {
     const params = q !== '' ? { f: { name: q } } : {}
 
-    this.mediaManager.findAll((images) => {
-      this.setState({ images }, () => callback())
+    // TODO: Use async/await
+    mediaManager.findAll((images) => {
+      setState({ ...state, images })
+      if (callback) callback();
     }, params)
   }
 
-  handleUpload(files) {
-    this.setState(
-      { filesToUpload: files.length, filesUploaded: 0, files: [] },
-      () => {
-        files.forEach((file) => {
-          this.mediaManager.uploadFile(file, (response) => {
-            const { files, q } = this.state
+  const handleOpenPicker = () => {
+    const { q } = state;
 
-            this.setState(
-              {
-                filesUploaded: this.state.filesUploaded + 1,
-                files: [...files, response]
-              },
-              () => {
-                if (this.state.filesToUpload === this.state.filesUploaded) {
-                  this.fetchData(q, () => {
-                    // Upload complete
-                  })
-                }
-              }
-            )
-          })
-        })
-      }
-    )
-  }
-
-  handleOpenPicker() {
-    const { q } = this.state
-
-    this.fetchData(q, () => {
-      this.setState({ pickerOpen: true })
+    fetchData(q, () => {
+      setOpen(true);
     })
   }
 
-  handleSelectImage() {
-    this.setState({ pickerOpen: false }, () => {
-      if (this.props.onChange) this.props.onChange(this.state.selectedImage)
+  const notifyChange = () => {
+    if (onChange) onChange(state.selectedImage);
+  }
+
+  const handleClearImage = () => {
+    setState({ ...state, selectedImage: false });
+    notifyChange();
+  }
+
+  const handleSelectImage = () => {
+    setOpen(false);
+    notifyChange();
+  }
+
+  const handleSearch = (q) => {
+    fetchData(q);
+  }
+
+  const handleSearchTermUpdate = (q) => {
+    setState({ ...state, q });
+  }
+
+  const handleSearchClear = () => {
+    setState({ ...state, q: '' });
+    fetchData('');
+  }
+
+  const handleFastSelect = (selectedImage) => {
+    setState({ ...state, selectedImage });
+    setOpen(false);
+    notifyChange();
+  }
+
+  const handleDeleteImage = (image) => {
+    if (!confirm('Are you sure? ')) return;
+
+    const { images } = state
+
+    mediaManager.destroy(image, (deletedImage) => {
+      setState({ ...state, images: removeById(images, deletedImage.id) });
     })
   }
 
-  handleClearImage() {
-    this.setState({ selectedImage: false }, () => {
-      if (this.props.onChange) this.props.onChange(this.state.selectedImage)
-    })
-  }
-
-  handleFastSelect(image) {
-    this.setState({ selectedImage: image, pickerOpen: false }, () => {
-      if (this.props.onChange) this.props.onChange(this.state.selectedImage)
-    })
-  }
-
-  handleDeleteImage(image) {
-    if (!confirm('Are you sure? ')) return
-
-    const { images } = this.state
-
-    this.mediaManager.destroy(image, (deletedImage) => {
-      this.setState({ images: removeById(images, deletedImage.id) })
-    })
-  }
-
-  handleSearch(q) {
-    this.fetchData(q, () => {})
-  }
-
-  handleSearchTermUpdate(q) {
-    this.setState({ q })
-  }
-
-  handleSearchClear() {
-    this.setState({ q: '' }, () => this.fetchData('', () => {}))
-  }
-
-  handleEditImage(image) {
-    this.setState({
+  // TODO: Do we need this?
+  const handleEditImage = (image) => {
+    setState({
+      ...state,
       imageDialogOpen: true,
       editImage: image,
       alt: image.alt || ''
-    })
+    });
   }
 
-  handleUpdateImage(editImage) {
-    const { alt, images, selectedImage } = this.state
+  const handleUpload = (files) => {
+    setState({ ...state, filesToUpload: files.length, filesUploaded: 0, files: [] });
 
-    // optimistic update
-    if (images.length > 0) {
-      const imageIdx = images.findIndex(
-        (currentImage) => currentImage.id === editImage.id
-      )
+    // TODO: Rework this
+    files.forEach((file) => {
+      mediaManager.uploadFile(file, (response) => {
+        const { files, q } = state
 
-      const newImages = [
-        ...images.slice(0, imageIdx),
-        Object.assign({}, images[imageIdx], { alt }),
-        ...images.slice(imageIdx + 1)
-      ]
+        setState({
+          ...state,
+          filesUploaded: state.filesUploaded + 1,
+          files: [...files, response]
+        });
 
-      this.setState({ images: newImages })
-    }
-
-    if (parseInt(selectedImage.id, 10) === parseInt(editImage.id, 10)) {
-      this.setState(
-        { selectedImage: Object.assign({}, selectedImage, { alt }) },
-        () => {
-          if (this.props.onChange) this.props.onChange(this.state.selectedImage)
+        // TODO: Do we need this?
+        if (state.filesToUpload === state.filesUploaded) {
+          fetchData(q);
         }
-      )
-    }
-
-    const self = this
-    this.mediaManager.update(editImage, { alt }, () => {
-      self.setState({ imageDialogOpen: false })
-    })
+      })
+    });
   }
 
-  render() {
-    const { label = 'Image' } = this.props
-    const {
-      pickerOpen,
-      filesToUpload,
-      filesUploaded,
-      images,
-      selectedImage,
-      files,
-      q
-    } = this.state
+  const {
+    filesToUpload,
+    filesUploaded,
+    images,
+    selectedImage,
+    files,
+    q
+  } = state
 
-    return (
-      <div>
-        <ImageControl>
-          {selectedImage && (
-            <ImageWrapper>
-              <Img
-                src={selectedImage}
-                variant='thumb'
-                title={selectedImage.name}
-              />
-            </ImageWrapper>
-          )}
-
-          <FormGroup>
-            <Label>{`${label} ${
-              selectedImage.alt ? `(${selectedImage.alt})` : ''
-            }`}</Label>
-            <Button
-              type='button'
-              variant='secondary'
-              onClick={() => this.handleOpenPicker()}
-            >
-              Browse...
-            </Button>
-            <Button
-              type='button'
-              variant='secondary'
-              onClick={() => this.handleClearImage()}
-            >
-              Clear
-            </Button>
-          </FormGroup>
-        </ImageControl>
-
-        {pickerOpen && (
-          <Dialog
-            open={pickerOpen}
-            onClose={() => this.setState({ pickerOpen: false })}
-            title='Image Browser'
-            primaryLabel='Select'
-            onPrimary={() => this.handleSelectImage()}
-          >
-            <Tabs>
-              <div title='Browse'>
-                <BrowseTab
-                  images={images}
-                  selectedImage={selectedImage}
-                  q={q}
-                  onSearch={() => this.handleSearch(q)}
-                  onSearchTermChange={(term) =>
-                    this.handleSearchTermUpdate(term)
-                  }
-                  onSearchClear={() => this.handleSearchClear()}
-                  onSelect={(image) => this.setState({ selectedImage: image })}
-                  onFastSelect={(image) => this.handleFastSelect(image)}
-                  onDelete={(image) => this.handleDeleteImage(image)}
-                  onEdit={(image) => this.handleEditImage(image)}
-                />
-              </div>
-              <div title='Upload'>
-                <UploadTab
-                  filesToUpload={filesToUpload}
-                  filesUploaded={filesUploaded}
-                  files={files}
-                  onUpload={(filesOnUpload) => this.handleUpload(filesOnUpload)}
-                />
-              </div>
-            </Tabs>
-          </Dialog>
+  return (
+    <div>
+      <ImageControl>
+        {selectedImage && (
+          <ImageWrapper>
+            <Img
+              src={selectedImage}
+              variant='thumb'
+              title={selectedImage.name}
+            />
+          </ImageWrapper>
         )}
-      </div>
-    )
-  }
+
+        <FormGroup>
+          <Label>{`${label} ${selectedImage.alt ? `(${selectedImage.alt})` : ''
+            }`}</Label>
+          <Button
+            type='button'
+            variant='secondary'
+            onClick={handleOpenPicker}
+          >
+            Browse...
+          </Button>
+          <Button
+            type='button'
+            variant='secondary'
+            onClick={handleClearImage}
+          >
+            Clear
+          </Button>
+        </FormGroup>
+      </ImageControl>
+
+      {open && (
+        <Dialog
+          open
+          onClose={() => setOpen(false)}
+          title='Image Browser'
+          primaryLabel='Select'
+          onPrimary={handleSelectImage}
+        >
+          <Tabs>
+            <div title='Browse'>
+              <BrowseTab
+                images={images}
+                selectedImage={selectedImage}
+                q={q}
+                onSearch={() => handleSearch(q)}
+                onSearchTermChange={handleSearchTermUpdate}
+                onSearchClear={handleSearchClear}
+                onSelect={(selectedImage) => setState({ ...state, selectedImage })}
+                onFastSelect={handleFastSelect}
+                onDelete={handleDeleteImage}
+                onEdit={handleEditImage}
+              />
+            </div>
+            <div title='Upload'>
+              <UploadTab
+                filesToUpload={filesToUpload}
+                filesUploaded={filesUploaded}
+                files={files}
+                onUpload={handleUpload}
+              />
+            </div>
+          </Tabs>
+        </Dialog>
+      )}
+
+      {/* <pre>{JSON.stringify(state, null, 2)}</pre> */}
+    </div>
+  )
 }
 
-ImagePicker.contextTypes = {
-  host: PropTypes.string,
-  mediaManager: PropTypes.object
-}
-
-export default withMediaManager(ImagePicker)
+export default ImagePicker
