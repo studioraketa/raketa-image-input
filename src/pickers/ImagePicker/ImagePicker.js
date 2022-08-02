@@ -28,7 +28,7 @@ const ImageControl = styled.div`
 `
 
 const ImagePicker = ({ mediaManager: mediaManagerProps, label = 'Image', value, onChange }) => {
-  const mediaManager = React.useContext(MediaManagerContext) || mediaManagerProps;
+  const mediaManager = mediaManagerProps || React.useContext(MediaManagerContext);
 
   const [open, setOpen] = React.useState(false);
   const [state, setState] = React.useState({
