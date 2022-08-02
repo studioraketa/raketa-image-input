@@ -145,12 +145,12 @@ const ImagePicker = ({ mediaManager: mediaManagerProps, label = 'Image', value, 
   return (
     <div>
       <ImageControl>
-        {selectedImage && (
+        {value && (
           <ImageWrapper>
             <Img
-              src={selectedImage}
+              src={value}
               variant='thumb'
-              title={selectedImage.name}
+              title={value.name}
             />
           </ImageWrapper>
         )}

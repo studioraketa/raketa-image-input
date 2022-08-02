@@ -1,6 +1,6 @@
 import React from 'react'
 import { ThemeProvider } from 'styled-components'
-import { theme } from '@raketa-cms/raketa-mir'
+import { theme, Row, Col } from '@raketa-cms/raketa-mir'
 
 import {
   ImagePicker,
@@ -25,15 +25,29 @@ class FakeMediaManager {
 const mediaManager = new FakeMediaManager('/')
 
 const App = () => {
+  const [image1, setImage1] = React.useState(false);
+  const [image2, setImage2] = React.useState(false);
+
   return (
     <MediaManagerContext.Provider value={mediaManager}>
       <img src={imagePlaceholder('32x32')} alt='32x32' />
 
       <ThemeProvider theme={theme}>
-        <ImagePicker />
+        <ImagePicker value={image1} onChange={(img) => setImage1(img)} />
       </ThemeProvider>
 
-      <ImageInput mediaManager={mediaManager} />
+      <ImageInput value={image2} onChange={(img) => setImage2(img)} mediaManager={mediaManager} />
+
+      <Row>
+        <Col s={6}>
+          <label>Image 1</label>
+          <pre>{JSON.stringify(image1, null, 2)}</pre>
+        </Col>
+        <Col s={6}>
+          <label>Image 2</label>
+          <pre>{JSON.stringify(image2, null, 2)}</pre>
+        </Col>
+      </Row>
     </MediaManagerContext.Provider>
   )
 }
