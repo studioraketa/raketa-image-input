@@ -414,7 +414,7 @@ const IMAGES = [
     library: null,
     mime_type: 'image/svg+xml',
     name: 'undraw_wireframing_nxyi.svg',
-    size: 31993,
+    size: 3001993,
     sizes: {
       card_horizontal: {
         height: 370,
@@ -518,7 +518,7 @@ const IMAGES = [
     library: null,
     mime_type: 'image/svg+xml',
     name: 'undraw_team_page_pgpr.svg',
-    size: 26357,
+    size: 6000001,
     sizes: {
       card_horizontal: {
         height: 370,
