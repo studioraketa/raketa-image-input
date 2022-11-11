@@ -1,16 +1,19 @@
-import React from 'react';
-import { ThemeProvider } from 'styled-components'
-import { theme, Row, Col } from '@raketa-cms/raketa-mir'
+import React from "react";
+import { ThemeProvider } from "styled-components";
+import { theme, Row, Col } from "@raketa-cms/raketa-mir";
 
 import {
   ImagePicker,
   ImageInput,
   MediaManagerContext,
-  imagePlaceholder
-} from '@raketa-cms/raketa-image-picker'
-import MediaManager from './MediaManager';
+  imagePlaceholder,
+} from "@raketa-cms/raketa-image-picker";
+import MediaManager from "./MediaManager";
 
-const mediaManager = new MediaManager("https://images.raketa.cloud/api/", "API_KEY");
+const mediaManager = new MediaManager(
+  "https://images.raketa.cloud/api/",
+  process.env.REACT_APP_IMAGES_API_KEY
+);
 
 export default function App() {
   const [image1, setImage1] = React.useState(false);
@@ -18,13 +21,17 @@ export default function App() {
 
   return (
     <MediaManagerContext.Provider value={mediaManager}>
-      <img src={imagePlaceholder('32x32')} alt='32x32' />
+      <img src={imagePlaceholder("32x32")} alt="32x32" />
 
       <ThemeProvider theme={theme}>
         <ImagePicker value={image1} onChange={(img) => setImage1(img)} />
       </ThemeProvider>
 
-      <ImageInput value={image2} onChange={(img) => setImage2(img)} mediaManager={mediaManager} />
+      <ImageInput
+        value={image2}
+        onChange={(img) => setImage2(img)}
+        mediaManager={mediaManager}
+      />
 
       <Row>
         <Col s={6}>
@@ -37,5 +44,5 @@ export default function App() {
         </Col>
       </Row>
     </MediaManagerContext.Provider>
-  )
+  );
 }
