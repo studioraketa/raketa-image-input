@@ -1,4 +1,4 @@
-import React from 'react'
+import React from 'react';
 import { ThemeProvider } from 'styled-components'
 import { theme, Row, Col } from '@raketa-cms/raketa-mir'
 
@@ -8,23 +8,11 @@ import {
   MediaManagerContext,
   imagePlaceholder
 } from '@raketa-cms/raketa-image-picker'
-import IMAGES from './IMAGES'
+import MediaManager from './MediaManager';
 
-class FakeMediaManager {
-  findAll(callback, params = {}) {
-    if (params.f && params.f.name) {
-      const term = params.f.name.toLowerCase()
+const mediaManager = new MediaManager("https://images.raketa.cloud/api/", "API_KEY");
 
-      return callback(IMAGES.filter((i) => i.name.toLowerCase().includes(term)))
-    } else {
-      return callback(IMAGES)
-    }
-  }
-}
-
-const mediaManager = new FakeMediaManager('/')
-
-const App = () => {
+export default function App() {
   const [image1, setImage1] = React.useState(false);
   const [image2, setImage2] = React.useState(false);
 
@@ -51,5 +39,3 @@ const App = () => {
     </MediaManagerContext.Provider>
   )
 }
-
-export default App
