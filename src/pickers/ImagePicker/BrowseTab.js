@@ -1,20 +1,15 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import { reset, buttonReset, Button, Stack } from '@raketa-cms/raketa-mir'
+import { reset, buttonReset, Button, Stack, H, P } from '@raketa-cms/raketa-mir'
+import MediaManagerContext from '../../MediaManagerContext'
 
 import Img from '../../lib/Image'
 import TextInput from '../../forms/TextInput'
 
-const IconEdit = () => (
-  <img
-    style={{ width: '12px', margin: '0 auto' }}
-    src='data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz48c3ZnIHdpZHRoPSIyMnB4IiBoZWlnaHQ9IjIycHgiIHZpZXdCb3g9IjAgMCAyMiAyMiIgdmVyc2lvbj0iMS4xIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIj4gICAgICAgIDx0aXRsZT5lZGl0LTI8L3RpdGxlPiAgICA8ZGVzYz5DcmVhdGVkIHdpdGggU2tldGNoLjwvZGVzYz4gICAgPGRlZnM+PC9kZWZzPiAgICA8ZyBpZD0iZWRpdC0yIiBzdHJva2U9Im5vbmUiIHN0cm9rZS13aWR0aD0iMSIgZmlsbD0ibm9uZSIgZmlsbC1ydWxlPSJldmVub2RkIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPiAgICAgICAgPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMi4wMDAwMDAsIDIuMDAwMDAwKSIgaWQ9IlNoYXBlIiBzdHJva2U9IiNGRkZGRkYiIHN0cm9rZS13aWR0aD0iMiI+ICAgICAgICAgICAgPHBvbHlnb24gcG9pbnRzPSIxMyAwIDE4IDUgNSAxOCAwIDE4IDAgMTMiPjwvcG9seWdvbj4gICAgICAgIDwvZz4gICAgPC9nPjwvc3ZnPg=='
-  />
-)
-
 const ImageList = styled.div`
   ${reset};
+  flex: 3;
   display: flex;
   flex-wrap: wrap;
   align-content: flex-start;
@@ -30,16 +25,6 @@ const Thumb = styled.div`
   height: 116px;
   border: 8px solid
     ${(props) => (props.selected ? props.theme.colors.success : 'transparent')};
-
-  button {
-    display: none;
-  }
-
-  &:hover {
-    button {
-      display: inline-block;
-    }
-  }
 `
 
 const ImageWrapper = styled.div`
@@ -51,35 +36,6 @@ const ImageWrapper = styled.div`
   & > img {
     width: 100%;
   }
-`
-
-const EditButton = styled.button`
-  ${reset}
-  ${buttonReset}
-  position: absolute;
-  bottom: 8px;
-  left: 12px;
-  background-color: ${(props) => props.theme.colors.success};
-  font-size: 0.85em;
-  color: #fff;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-`
-
-const DeleteButton = styled.button`
-  ${reset}
-  ${buttonReset}
-  position: absolute;
-  bottom: 8px;
-  right: 12px;
-  background-color: ${(props) => props.theme.colors.danger};
-  font-size: 1em;
-  color: #fff;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  line-height: 19px;
 `
 
 const getPreviewImage = (image) => {
@@ -98,8 +54,6 @@ const ImageItem = ({
   selected,
   onSelect,
   onFastSelect,
-  onDelete,
-  onEdit
 }) => (
   <Thumb
     selected={selected ? 'selected' : ''}
@@ -109,85 +63,154 @@ const ImageItem = ({
     <ImageWrapper title={image.name}>
       <Img src={getPreviewImage(image)} variant='thumb' title={image && image.name} />
     </ImageWrapper>
-
-    <EditButton
-      type='button'
-      onClick={(e) => {
-        e.preventDefault()
-        e.stopPropagation()
-        onEdit(image)
-      }}
-    >
-      <IconEdit />
-    </EditButton>
-
-    <DeleteButton
-      type='button'
-      onClick={(e) => {
-        e.preventDefault()
-        e.stopPropagation()
-        onDelete(image)
-      }}
-    >
-      &times;
-    </DeleteButton>
   </Thumb>
 )
+
+const ImagePreviewWrapper = styled.div`
+  width: 100%;
+  margin-bottom: 1rem;
+  text-align: center;
+
+  & > img {
+    object-fit: contain;
+    width: 100%;
+    max-height: 200px;
+    margin-bottom: 0.5rem;
+  }
+`;
+
+const ImageInspector = styled.div`
+  flex: 1;
+  padding-left: 1rem;
+  border-left: 1px solid ${(props) => props.theme.colors.gray};
+`
+
+const ImagePreview = ({ image, onSave, onDelete }) => {
+  const [state, setState] = React.useState({
+    alt: '',
+  });
+
+  React.useEffect(() => {
+    setState({
+      ...state,
+      alt: image.settings.find(s => s.key === 'alt')?.value || '',
+    })
+  }, [image]);
+
+  const handleUpdate = () => {
+    const altIdx = image.settings.findIndex(s => s.key === 'alt');
+
+    onSave(image, {
+      settings: [
+        ...image.settings.slice(0, altIdx),
+        { key: "alt", value: state.alt },
+        ...image.settings.slice(altIdx + 1),
+      ]
+    });
+  }
+
+  return (
+    <ImageInspector>
+      <ImagePreviewWrapper>
+        <Img src={image} variant="original" />
+
+        <H size='regular' style={{ maxWidth: '200px', fontWeight: 500, margin: '0 auto', wordWrap: 'break-word' }}>{image.name}</H>
+        <div style={{ opacity: 0.5 }}>{(image.size / (1024)).toFixed(2)} KB / {image.width}&times;{image.height}</div>
+      </ImagePreviewWrapper>
+
+      <TextInput
+        label="Image alt text"
+        value={state.alt}
+        onChange={(alt) => setState({ ...state, alt })}
+      />
+
+      <Button
+        type='button'
+        variant='primary'
+        onClick={handleUpdate}>
+        Update
+      </Button>
+
+      <Button
+        type='button'
+        variant='danger'
+        onClick={(e) => {
+          e.preventDefault()
+          e.stopPropagation()
+          onDelete(image)
+        }}
+      >
+        Remove image
+      </Button>
+    </ImageInspector>
+  );
+}
 
 const BrowseTab = ({
   images,
   q,
   selectedImage: initialImage,
-  onFastSelect,
   onSelect,
+  onFastSelect,
   onDelete,
   onSearch,
   onSearchTermChange,
-  onSearchClear,
-  onEdit
+  onUpdateImage,
 }) => {
-  const [selectedImage, setSelectedImage] = React.useState(initialImage)
+  const mediaManager = React.useContext(MediaManagerContext);
+  const [selectedImage, setSelectedImage] = React.useState(initialImage);
 
   const handleSelectImage = (newSelected) => {
-    setSelectedImage(newSelected)
-    onSelect(newSelected)
+    setSelectedImage(newSelected);
+    onSelect(newSelected);
   }
+
+  const handleUpdateImage = (image, updates) => {
+    mediaManager.update(image, updates, (updatedImage) => {
+      setSelectedImage(updatedImage);
+      onUpdateImage(updatedImage);
+      onSelect(updatedImage);
+    });
+  };
 
   return (
     <React.Fragment>
-      <Stack v='center' h='flex-start' g='1em'>
+      <Stack v='center' h='flex-start' g='0.5rem'>
         <TextInput
           label='Search images'
           value={q}
           onChange={(term) => onSearchTermChange(term)}
         />
 
-        <Button type='button' variant='primary' onClick={() => onSearch()}>
+        <Button type='button' variant='secondary' onClick={() => onSearch()}>
           Search
-        </Button>
-
-        <Button
-          type='button'
-          variant='secondary'
-          onClick={() => onSearchClear()}
-        >
-          Clear
         </Button>
       </Stack>
 
-      <ImageList>
-        {images.map((image) => (
-          <ImageItem
-            key={image.id}
-            image={image}
-            selected={selectedImage.id === image.id}
-            onSelect={handleSelectImage}
-            onFastSelect={onFastSelect}
-            onDelete={onDelete}
-            onEdit={onEdit}
+      <Stack g="1rem">
+        <ImageList>
+          {images.map((image) => (
+            <ImageItem
+              key={image.id}
+              image={image}
+              selected={selectedImage && selectedImage.id === image.id}
+              onSelect={handleSelectImage}
+              onFastSelect={onFastSelect}
+            />
+          ))}
+        </ImageList>
+
+        {selectedImage && (
+          <ImagePreview
+            image={selectedImage}
+            onSave={handleUpdateImage}
+            onDelete={(image) => {
+              setSelectedImage(null);
+              onDelete(image);
+            }}
           />
-        ))}
-      </ImageList>
+        )}
+      </Stack>
     </React.Fragment>
   )
 }

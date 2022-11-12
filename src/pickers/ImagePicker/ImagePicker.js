@@ -80,11 +80,6 @@ const ImagePicker = ({ mediaManager: mediaManagerProps, label = 'Image', value, 
     setState({ ...state, q });
   }
 
-  const handleSearchClear = () => {
-    setState({ ...state, q: '' });
-    fetchData('');
-  }
-
   const handleFastSelect = (selectedImage) => {
     setState({ ...state, selectedImage });
     setOpen(false);
@@ -97,18 +92,8 @@ const ImagePicker = ({ mediaManager: mediaManagerProps, label = 'Image', value, 
     const { images } = state
 
     mediaManager.destroy(image, (deletedImage) => {
-      setState({ ...state, images: removeById(images, deletedImage.id) });
+      setState({ ...state, images: removeById(images, deletedImage.id), selectedImage: false });
     })
-  }
-
-  // TODO: Do we need this?
-  const handleEditImage = (image) => {
-    setState({
-      ...state,
-      imageDialogOpen: true,
-      editImage: image,
-      alt: image.alt || ''
-    });
   }
 
   const handleUpload = (files) => {
@@ -133,6 +118,18 @@ const ImagePicker = ({ mediaManager: mediaManagerProps, label = 'Image', value, 
     });
   }
 
+  const handleUpdateImage = (updatedImage) => {
+    const updatedIdx = images.findIndex(i => i.id === updatedImage.id);
+    setState({
+      ...state,
+      images: [
+        ...images.slice(0, updatedIdx),
+        updatedImage,
+        ...images.slice(updatedIdx + 1),
+      ]
+    });
+  }
+
   const {
     filesToUpload,
     filesUploaded,
@@ -140,7 +137,7 @@ const ImagePicker = ({ mediaManager: mediaManagerProps, label = 'Image', value, 
     selectedImage,
     files,
     q
-  } = state
+  } = state;
 
   return (
     <div>
@@ -191,11 +188,10 @@ const ImagePicker = ({ mediaManager: mediaManagerProps, label = 'Image', value, 
                 q={q}
                 onSearch={() => handleSearch(q)}
                 onSearchTermChange={handleSearchTermUpdate}
-                onSearchClear={handleSearchClear}
                 onSelect={(selectedImage) => setState({ ...state, selectedImage })}
                 onFastSelect={handleFastSelect}
                 onDelete={handleDeleteImage}
-                onEdit={handleEditImage}
+                onUpdateImage={handleUpdateImage}
               />
             </div>
             <div title='Upload'>
